@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Suriya Store — Demo ई-कॉमर्स</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ======= Basic Reset & Variables ======= */
+        * {box-sizing: border-box; margin:0; padding:0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;}
+        :root{
+            --primary:#2874f0; --secondary:#fb641b; --accent:#ff9f00;
+            --light:#f1f3f6; --dark:#212121; --white:#ffffff;
+        }
+        body{background:var(--light); color:var(--dark); min-height:100vh;}
+
+        /* ======= Header ======= */
+        header{background:var(--primary); padding:12px 0; position:sticky; top:0; z-index:200; box-shadow:0 2px 4px rgba(0,0,0,0.08);}
+        .header-container{max-width:1200px; margin:0 auto; padding:0 16px; display:flex; align-items:center; justify-content:space-between; gap:12px;}
+        .logo{display:flex; align-items:center; gap:8px; color:white;}
+        .logo i{font-size:28px}
+        .logo h1{font-size:20px; font-weight:700;}
+        .search-bar{flex:1; max-width:540px; display:flex; margin:0 16px;}
+        .search-bar input{flex:1; padding:10px 14px; border:none; border-radius:2px 0 0 2px; font-size:14px;}
+        .search-bar button{padding:10px 14px; border:none; background:var(--white); border-radius:0 2px 2px 0; cursor:pointer;}
+        .nav-buttons{display:flex; gap:8px; align-items:center;}
+        .nav-btn{color:white; text-decoration:none; padding:8px 12px; font-weight:600; display:flex; align-items:center; gap:8px; cursor:pointer;}
+        .cart-count{background:#fff; color:var(--primary); font-weight:700; padding:2px 8px; border-radius:20px; font-size:13px;}
+
+        /* ======= Categories ======= */
+        .categories{background:var(--white); box-shadow:0 1px 1px rgba(0,0,0,0.06);}
+        .categories-container{max-width:1200px; margin:0 auto; padding:10px 16px; display:flex; gap:10px; overflow:auto;}
+        .category-item{display:flex; flex-direction:column; align-items:center; padding:8px 12px; text-decoration:none; color:var(--dark); border-radius:6px; min-width:78px; justify-content:center;}
+        .category-item i{color:var(--primary); font-size:18px; margin-bottom:4px;}
+
+        /* ======= Banner ======= */
+        .banner-slider{max-width:1200px; margin:18px auto; padding:0 16px;}
+        .slider-container{height:280px; border-radius:8px; overflow:hidden; position:relative; box-shadow:0 4px 8px rgba(0,0,0,0.08); background-size:cover; background-position:center;}
+        .slide-overlay{position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,0,0,0.15), rgba(0,0,0,0.35)); display:flex; align-items:flex-end; padding:28px; color:white;}
+        .slide-overlay h2{font-size:28px; margin-bottom:10px;}
+        .slide-overlay button{background:var(--secondary); border:none; padding:10px 16px; color:white; border-radius:6px; cursor:pointer; font-weight:700;}
+
+        .slider-dots{display:flex; gap:8px; justify-content:center; margin-top:12px;}
+        .dot{width:10px; height:10px; border-radius:50%; background:#ccc; cursor:pointer;}
+        .dot.active{background:var(--primary);}
+
+        /* ======= Products ======= */
+        .products-section{max-width:1200px; margin:26px auto; padding:0 16px;}
+        .section-title{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;}
+        .products-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:20px;}
+        .product-card{background:var(--white); border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06); display:flex; flex-direction:column;}
+        .product-image{width:100%; height:180px; object-fit:cover; border-bottom:1px solid #eee;}
+        .product-details{padding:14px; display:flex; flex-direction:column; gap:8px; flex:1;}
+        .product-name{font-size:16px; font-weight:600;}
+        .product-price{font-size:16px; font-weight:700; color:var(--dark);}
+        .price-row{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+        .original-price{text-decoration:line-through; color:#888; font-weight:600;}
+        .discount{color:#388e3c; font-weight:600;}
+        .product-actions{display:flex; gap:8px; margin-top:auto;}
+        .btn{padding:8px 10px; border-radius:6px; border:none; font-weight:700; cursor:pointer;}
+        .add-to-cart-btn{background:transparent; color:var(--primary); border:1px solid var(--primary);}
+        .buy-now-btn{background:var(--secondary); color:white;}
+
+        /* ======= Modals ======= */
+        .modal{display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:400; justify-content:center; align-items:center; padding:20px;}
+        .modal.show{display:flex;}
+        .modal-content{background:var(--white); width:100%; max-width:560px; border-radius:10px; padding:18px; box-shadow:0 8px 30px rgba(0,0,0,0.2); max-height:90vh; overflow:auto;}
+        .modal-header{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;}
+        .close-btn{background:none; border:none; font-size:22px; cursor:pointer; color:#666;}
+        .address-form, .login-form, .cart-items{display:grid; gap:12px;}
+        .form-group{display:flex; flex-direction:column; gap:6px;}
+        input[type=text], input[type=tel], input[type=password], textarea{padding:10px 12px; border:1px solid #ddd; border-radius:6px; font-size:15px;}
+        textarea{min-height:90px; resize:vertical;}
+        .submit-btn{background:var(--primary); color:white; border:none; padding:12px; border-radius:8px; font-weight:800; cursor:pointer;}
+
+        /* ======= Cart Dropdown/Page ======= */
+        .cart-panel{position:fixed; right:18px; top:70px; width:360px; max-width:calc(100% - 36px); background:var(--white); box-shadow:0 8px 30px rgba(0,0,0,0.12); border-radius:8px; z-index:450; padding:14px; display:none;}
+        .cart-panel.show{display:block;}
+        .cart-item{display:flex; gap:10px; align-items:center; padding:8px 0; border-bottom:1px dashed #eee;}
+        .cart-item img{width:64px; height:64px; object-fit:cover; border-radius:6px;}
+        .cart-item-info{flex:1;}
+        .qty-controls{display:flex; gap:6px; align-items:center;}
+        .small-btn{padding:6px 8px; border-radius:6px; border:1px solid #ddd; background:transparent; cursor:pointer;}
+
+        /* ======= Footer ======= */
+        footer{background:var(--dark); color:white; padding:32px 0; margin-top:28px;}
+        .footer-container{max-width:1200px; margin:0 auto; padding:0 16px; display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:20px;}
+        .footer-section h3{color:#fff; margin-bottom:12px; font-size:14px;}
+        .footer-section p, .footer-section a{color:#ccc; font-size:14px; display:block; margin-bottom:8px; text-decoration:none;}
+
+        /* ======= Responsive ======= */
+        @media (max-width:768px){
+            .search-bar{order:3; width:100%; margin-top:8px;}
+            .header-container{flex-wrap:wrap; gap:10px;}
+            .slider-container{height:200px;}
+            .product-image{height:140px;}
+            .cart-panel{right:10px; top:62px; width:320px;}
+        }
+        @media (max-width:480px){
+            .nav-buttons .nav-btn span{display:none;}
+            .slider-container{height:160px;}
+            .products-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));}
+            .cart-panel{width:calc(100% - 24px);}
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-container">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <div class="logo"><i class="fas fa-store"></i><h1>Suriya Store</h1></div>
+                <div class="search-bar" role="search">
+                    <input id="searchInput" type="text" placeholder="उत्पाद खोजें...">
+                    <button id="searchBtn"><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <a href="#" class="nav-btn" id="login-btn"><i class="fas fa-user"></i><span id="loginText">लॉगिन</span></a>
+                <a class="nav-btn" id="cart-toggle"><i class="fas fa-shopping-cart"></i> <span class="cart-count" id="cartCount">0</span></a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Categories -->
+    <div class="categories">
+        <div class="categories-container">
+            <a class="category-item"><i class="fas fa-mobile-alt"></i><span>मोबाइल</span></a>
+            <a class="category-item"><i class="fas fa-laptop"></i><span>लैपटॉप</span></a>
+            <a class="category-item"><i class="fas fa-tshirt"></i><span>फैशन</span></a>
+            <a class="category-item"><i class="fas fa-home"></i><span>घर</span></a>
+            <a class="category-item"><i class="fas fa-tv"></i><span>इलेक्ट्रॉनिक्स</span></a>
+            <a class="category-item"><i class="fas fa-utensils"></i><span>ग्रॉसरी</span></a>
+        </div>
+    </div>
+
+    <!-- Banner Slider -->
+    <div class="banner-slider">
+        <div class="slider-container" id="sliderContainer" style="background-image: linear-gradient(rgba(0,0,0,0.15), rgba(0,0,0,0.35)), url('https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=1200&q=80');">
+            <div class="slide-overlay">
+                <div>
+                    <h2>बड़े छूट - सीमित समय के लिए</h2>
+                    <button id="shopNowBtn">अभी खरीदें</button>
+                </div>
+            </div>
+        </div>
+        <div class="slider-dots">
+            <div class="dot active" data-bg="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=1200&q=80"></div>
+            <div class="dot" data-bg="https://images.unsplash.com/photo-1605733513597-a8f8341084e6?auto=format&fit=crop&w=1200&q=80"></div>
+            <div class="dot" data-bg="https://images.unsplash.com/photo-1555529771-7888783a18d3?auto=format&fit=crop&w=1200&q=80"></div>
+        </div>
+    </div>
+
+    <!-- Products -->
+    <main class="products-section">
+        <div class="section-title">
+            <h2>टॉप ऑफ़र्स</h2>
+            <a class="view-all" href="#">सभी देखें</a>
+        </div>
+
+        <div class="products-grid" id="productsGrid">
+            <!-- Products will be rendered by JS -->
+        </div>
+    </main>
+
+    <!-- Cart Panel (small dropdown) -->
+    <div class="cart-panel" id="cartPanel" aria-hidden="true">
+        <h3>आपका कार्ट</h3>
+        <div id="cartItemsContainer" class="cart-items"></div>
+        <div style="margin-top:12px; display:flex; justify-content:space-between; align-items:center;">
+            <strong id="cartTotalText">कुल: ₹0</strong>
+            <div>
+                <button class="btn" id="viewCartBtn" style="margin-right:8px; border:1px solid #ddd;">विस्तृत देखें</button>
+                <button class="btn" id="checkoutCartBtn" style="background:var(--secondary); color:#fff;">खरीदें</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Address Modal (for Buy Now & Checkout) -->
+    <div class="modal" id="addressModal" role="dialog" aria-modal="true" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="addressModalTitle">शिपिंग पता</h2>
+                <button class="close-btn" id="addressCloseBtn">&times;</button>
+            </div>
+
+            <form id="addressForm" class="address-form">
+                <input type="hidden" id="productNameHidden" name="productName">
+                <input type="hidden" id="isCartCheckout" name="isCartCheckout" value="false">
+                <div class="form-group">
+                    <label for="fullName">पूरा नाम</label>
+                    <input id="fullName" name="fullName" type="text" required>
+                </div>
+                <div class="form-group">
+                    <label for="mobile">मोबाइल नंबर</label>
+                    <input id="mobile" name="mobile" type="tel" required>
+                </div>
+                <div class="form-group">
+                    <label for="pincode">पिन कोड</label>
+                    <input id="pincode" name="pincode" type="text" required>
+                </div>
+                <div class="form-group">
+                    <label for="address">पूरा पता</label>
+                    <textarea id="address" name="address" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="city">शहर</label>
+                    <input id="city" name="city" type="text" required>
+                </div>
+                <div class="form-group">
+                    <label for="state">राज्य</label>
+                    <input id="state" name="state" type="text" required>
+                </div>
+
+                <button type="submit" class="submit-btn">ऑर्डर की पुष्टि करें</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>लॉगिन / रजिस्टर</h2>
+                <button class="close-btn" id="loginCloseBtn">&times;</button>
+            </div>
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="loginEmail">ईमेल / मोबाइल</label>
+                    <input id="loginEmail" type="text" required placeholder="e.g. example@mail.com या 91xxxxxxxxxx">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">पासवर्ड</label>
+                    <input id="loginPassword" type="password" required placeholder="कम से कम 6 अक्षर">
+                </div>
+                <button type="submit" class="submit-btn">लॉगिन करें</button>
+                <p style="font-size:13px; color:#666; margin-top:8px;">(यह एक लोकल-डेमो है — कोई वास्तविक ऑथेंटिकेशन नहीं)</p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Full Cart Page Modal -->
+    <div class="modal" id="fullCartModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>आपके कार्ट के आइटम</h2>
+                <button class="close-btn" id="fullCartClose">&times;</button>
+            </div>
+            <div id="fullCartItems"></div>
+            <div style="margin-top:14px; display:flex; justify-content:space-between; align-items:center;">
+                <strong id="fullCartTotal">कुल: ₹0</strong>
+                <div>
+                    <button class="btn" id="fullCartClear" style="margin-right:8px; border:1px solid #ddd;">साफ़ करें</button>
+                    <button class="btn" id="fullCheckoutBtn" style="background:var(--secondary); color:#fff;">चेकआउट</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-section">
+                <h3>हमारे बारे में</h3>
+                <p>Suriya Store — डेमो ई-कॉमर्स।</p>
+            </div>
+            <div class="footer-section">
+                <h3>सहायता</h3>
+                <a href="#">सामान्य प्रश्न</a>
+                <a href="#">ऑर्डर ट्रैक</a>
+            </div>
+            <div class="footer-section">
+                <h3>संपर्क</h3>
+                <p>ऑफिस: बड़िया हिमादेपुर</p>
+                <p>फोन: 9693029146</p>
+            </div>
+            <div class="footer-section">
+                <h3>हमें फॉलो करें</h3>
+                <a href="#"><i class="fab fa-facebook"></i> Facebook</a>
+                <a href="#"><i class="fab fa-instagram"></i> Instagram</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        /*************************************************************************
+         *  Data & Utilities
+         *************************************************************************/
+        const PRODUCTS = [
+            { id: 'p1', name: 'सैमसंग गैलेक्सी M34', price: 14999, original: 18999, img: 'https://images.unsplash.com/photo-1605236453806-6ff36851218e?auto=format&fit=crop&w=800&q=80' },
+            { id: 'p2', name: 'डेल इन्स्पिरोन 15', price: 54990, original: 62990, img: 'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?auto=format&fit=crop&w=800&q=80' },
+            { id: 'p3', name: 'नोइज़ स्मार्ट वॉच', price: 1499, original: 2499, img: 'https://images.unsplash.com/photo-1585386959984-a4155224a1ad?auto=format&fit=crop&w=800&q=80' },
+            { id: 'p4', name: 'स्पोर्ट्स शूज', price: 2299, original: 3299, img: 'https://images.unsplash.com/photo-1560769629-975ec94e6a86?auto=format&fit=crop&w=800&q=80' },
+            { id: 'p5', name: 'वायरलेस हेडफोन', price: 1799, original: 2999, img: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80' },
+            { id: 'p6', name: 'स्मार्ट वॉच Pro', price: 3499, original: 4999, img: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80' },
+            { id: 'p7', name: 'रनिंग शूज', price: 3999, original: 5999, img: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80' },
+            { id: 'p8', name: 'स्पोर्ट्स जूते', price: 2599, original: 3499, img: 'https://images.unsplash.com/photo-1491553895911-0055eca6402d?auto=format&fit=crop&w=800&q=80' }
+        ];
+
+        // localStorage keys
+        const KEY_USER = 'suriya_user';
+        const KEY_CART = 'suriya_cart';
+        const KEY_ORDERS = 'suriya_orders';
+
+        // helper: fetch cart from localStorage
+        function loadCart(){
+            try {
+                return JSON.parse(localStorage.getItem(KEY_CART)) || [];
+            } catch(e) { return []; }
+        }
+        function saveCart(cart){
+            localStorage.setItem(KEY_CART, JSON.stringify(cart));
+            renderCartCount();
+        }
+
+        function loadUser(){
+            try { return JSON.parse(localStorage.getItem(KEY_USER)); } catch(e) { return null; }
+        }
+        function saveUser(user){
+            localStorage.setItem(KEY_USER, JSON.stringify(user));
+        }
+        function logoutUser(){
+            localStorage.removeItem(KEY_USER);
+        }
+
+        function currency(num){ return '₹' + Number(num).toLocaleString('en-IN'); }
+
+        /*************************************************************************
+         *  Render Products
+         *************************************************************************/
+        const productsGrid = document.getElementById('productsGrid');
+        function renderProducts(list = PRODUCTS){
+            productsGrid.innerHTML = '';
+            list.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <img src="${p.img}" alt="${p.name}" class="product-image">
+                    <div class="product-details">
+                        <div class="product-name">${p.name}</div>
+                        <div class="price-row">
+                            <div class="product-price">${currency(p.price)}</div>
+                            <div class="original-price">${currency(p.original)}</div>
+                            <div class="discount">${Math.round((1 - p.price/p.original)*100)}% छूट</div>
+                        </div>
+                        <div style="color:#777; font-size:13px;">⭐ ${(Math.floor(Math.random()*2)+4)}.0 <span style="color:#999; font-size:12px;">(आज के ${Math.floor(Math.random()*10000)})</span></div>
+                        <div class="product-actions">
+                            <button class="btn add-to-cart-btn" data-id="${p.id}">कार्ट में डालें</button>
+                            <button class="btn buy-now-btn" data-id="${p.id}">अभी खरीदें</button>
+                        </div>
+                    </div>
+                `;
+                productsGrid.appendChild(card);
+            });
+        }
+
+        /*************************************************************************
+         *  Cart Logic
+         *************************************************************************/
+        const cartToggle = document.getElementById('cart-toggle');
+        const cartPanel = document.getElementById('cartPanel');
+        const cartItemsContainer = document.getElementById('cartItemsContainer');
+        const cartCountEl = document.getElementById('cartCount');
+        const cartTotalText = document.getElementById('cartTotalText');
+        const viewCartBtn = document.getElementById('viewCartBtn');
+        const checkoutCartBtn = document.getElementById('checkoutCartBtn');
+
+        function getCartTotal(cart){
+            return cart.reduce((s,item)=> s + (item.price * item.qty), 0);
+        }
+
+        function renderCartCount(){
+            const cart = loadCart();
+            const totalQty = cart.reduce((s,i)=> s + i.qty, 0);
+            cartCountEl.textContent = totalQty;
+        }
+
+        function renderCartPanel(){
+            const cart = loadCart();
+            cartItemsContainer.innerHTML = '';
+            if(cart.length === 0){
+                cartItemsContainer.innerHTML = '<p style="color:#666;">आपका कार्ट खाली है</p>';
+                cartTotalText.textContent = 'कुल: ₹0';
+                return;
+            }
+            cart.forEach(item => {
+                const el = document.createElement('div');
+                el.className = 'cart-item';
+                el.innerHTML = `
+                    <img src="${item.img}" alt="${item.name}">
+                    <div class="cart-item-info">
+                        <div style="font-weight:700;">${item.name}</div>
+                        <div style="color:#666; margin-top:6px;">${currency(item.price)} x ${item.qty} = <strong>${currency(item.price*item.qty)}</strong></div>
+                        <div class="qty-controls" style="margin-top:8px;">
+                            <button class="small-btn qty-dec" data-id="${item.id}">-</button>
+                            <div style="padding:6px 8px; border-radius:6px; border:1px solid #eee;">${item.qty}</div>
+                            <button class="small-btn qty-inc" data-id="${item.id}">+</button>
+                            <button class="small-btn remove-item" data-id="${item.id}" style="margin-left:10px; border-color:#f2dede; color:#b33;">हटाएँ</button>
+                        </div>
+                    </div>
+                `;
+                cartItemsContainer.appendChild(el);
+            });
+            cartTotalText.textContent = 'कुल: ' + currency(getCartTotal(cart));
+        }
+
+        // add to cart
+        function addToCart(productId, qty = 1){
+            const prod = PRODUCTS.find(p => p.id === productId);
+            if(!prod) return;
+            const cart = loadCart();
+            const existing = cart.find(i=> i.id === productId);
+            if(existing){
+                existing.qty += qty;
+            } else {
+                cart.push({ id: prod.id, name: prod.name, price: prod.price, img: prod.img, qty });
+            }
+            saveCart(cart);
+            renderCartPanel();
+            showToast(`${prod.name} कार्ट में जोड़ा गया`);
+        }
+
+        // remove from cart
+        function removeFromCart(productId){
+            let cart = loadCart();
+            cart = cart.filter(i=> i.id !== productId);
+            saveCart(cart);
+            renderCartPanel();
+        }
+
+        function changeQty(productId, delta){
+            const cart = loadCart();
+            const item = cart.find(i=> i.id === productId);
+            if(!item) return;
+            item.qty += delta;
+            if(item.qty <= 0) {
+                // remove
+                const idx = cart.findIndex(i=> i.id === productId);
+                if(idx !== -1) cart.splice(idx,1);
+            }
+            saveCart(cart);
+            renderCartPanel();
+        }
+
+        /*************************************************************************
+         *  Login Logic
+         *************************************************************************/
+        const loginBtn = document.getElementById('login-btn');
+        const loginModal = document.getElementById('loginModal');
+        const loginCloseBtn = document.getElementById('loginCloseBtn');
+        const loginForm = document.getElementById('loginForm');
+        const loginText = document.getElementById('loginText');
+
+        // pending purchase product if user triggers buy without login
+        let pendingBuyProduct = null;
+
+        function updateLoginUI(){
+            const user = loadUser();
+            if(user){
+                loginText.textContent = user.name.split(' ')[0];
+                loginBtn.classList.add('logged-in');
+            } else {
+                loginText.textContent = 'लॉगिन';
+                loginBtn.classList.remove('logged-in');
+            }
+        }
+
+        loginBtn.addEventListener('click', (e)=>{
+            e.preventDefault();
+            const user = loadUser();
+            if(user){
+                // show small menu: logout or view profile — for simplicity do logout prompt
+                if(confirm('क्या आप लॉग आउट करना चाहते हैं?')){
+                    logoutUser();
+                    updateLoginUI();
+                    showToast('लॉग आउट हो गए');
+                }
+            } else {
+                loginModal.classList.add('show');
+            }
+        });
+
+        loginCloseBtn.addEventListener('click', ()=> loginModal.classList.remove('show'));
+
+        loginForm.addEventListener('submit', (e)=>{
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim();
+            const pwd = document.getElementById('loginPassword').value.trim();
+            if(email.length < 3 || pwd.length < 3){
+                alert('कृपया सही विवरण दें');
+                return;
+            }
+            const user = { name: email, email, loggedAt: new Date().toISOString() };
+            saveUser(user);
+            updateLoginUI();
+            loginModal.classList.remove('show');
+            showToast('लॉगिन सफल — ' + email);
+            // if pending buy, open address modal
+            if(pendingBuyProduct){
+                openAddressModal(pendingBuyProduct, false);
+                pendingBuyProduct = null;
+            }
+        });
+
+        /*************************************************************************
+         *  Address / Checkout Logic
+         *************************************************************************/
+        const addressModal = document.getElementById('addressModal');
+        const addressCloseBtn = document.getElementById('addressCloseBtn');
+        const addressForm = document.getElementById('addressForm');
+        const productNameHidden = document.getElementById('productNameHidden');
+        const isCartCheckoutInput = document.getElementById('isCartCheckout');
+        const addressModalTitle = document.getElementById('addressModalTitle');
+
+        addressCloseBtn.addEventListener('click', ()=> addressModal.classList.remove('show'));
+
+        function openAddressModal(productId = null, isCartCheckout = false){
+            const user = loadUser();
+            if(!user){
+                // open login first, set pending buy
+                pendingBuyProduct = productId;
+                loginModal.classList.add('show');
+                return;
+            }
+
+            // prepare modal
+            isCartCheckoutInput.value = isCartCheckout ? 'true' : 'false';
+            if(isCartCheckout){
+                productNameHidden.value = '';
+                addressModalTitle.textContent = 'चेकआउट - आपके कार्ट के लिए';
+            } else {
+                const prod = PRODUCTS.find(p => p.id === productId);
+                productNameHidden.value = prod ? prod.name : '';
+                addressModalTitle.textContent = 'ऑर्डर: ' + (prod ? prod.name : '');
+            }
+
+            // if user info stored earlier, prefill (optional)
+            // For demo, do not prefill — user may input each time
+            addressModal.classList.add('show');
+        }
+
+        addressForm.addEventListener('submit', (e)=>{
+            e.preventDefault();
+            const isCartCheckout = isCartCheckoutInput.value === 'true';
+            const fullName = document.getElementById('fullName').value.trim();
+            const mobile = document.getElementById('mobile').value.trim();
+            const pincode = document.getElementById('pincode').value.trim();
+            const addr = document.getElementById('address').value.trim();
+            const city = document.getElementById('city').value.trim();
+            const state = document.getElementById('state').value.trim();
+
+            if(!fullName || !mobile || !pincode || !addr || !city || !state){
+                alert('कृपया सभी विवरण भरें');
+                return;
+            }
+
+            const order = {
+                id: 'ORD' + Date.now(),
+                user: loadUser(),
+                shipping: { fullName, mobile, pincode, addr, city, state },
+                items: [],
+                total: 0,
+                placedAt: new Date().toISOString()
+            };
+
+            if(isCartCheckout){
+                const cart = loadCart();
+                if(cart.length === 0){
+                    alert('कार्ट खाली है');
+                    addressModal.classList.remove('show');
+                    return;
+                }
+                order.items = cart;
+                order.total = getCartTotal(cart);
+                // clear cart
+                saveCart([]);
+                renderCartPanel();
+                renderFullCart();
+            } else {
+                const prodName = productNameHidden.value;
+                const prod = PRODUCTS.find(p=> p.name === prodName);
+                if(prod){
+                    order.items = [{ id: prod.id, name: prod.name, price: prod.price, qty:1 }];
+                    order.total = prod.price;
+                } else {
+                    order.items = [];
+                    order.total = 0;
+                }
+            }
+
+            // save order (demo)
+            const orders = JSON.parse(localStorage.getItem(KEY_ORDERS) || '[]');
+            orders.push(order);
+            localStorage.setItem(KEY_ORDERS, JSON.stringify(orders));
+
+            addressModal.classList.remove('show');
+            addressForm.reset();
+            showToast('ऑर्डर कन्फर्म — ' + order.id + ' (कुल ' + currency(order.total) + ')');
+        });
+
+        /*************************************************************************
+         *  Full Cart Modal Logic
+         *************************************************************************/
+        const fullCartModal = document.getElementById('fullCartModal');
+        const fullCartClose = document.getElementById('fullCartClose');
+        const fullCartItems = document.getElementById('fullCartItems');
+        const fullCartTotal = document.getElementById('fullCartTotal');
+        const fullCartClear = document.getElementById('fullCartClear');
+        const fullCheckoutBtn = document.getElementById('fullCheckoutBtn');
+
+        function renderFullCart(){
+            const cart = loadCart();
+            fullCartItems.innerHTML = '';
+            if(cart.length === 0){
+                fullCartItems.innerHTML = '<p style="color:#666;">कोई आइटम नहीं।</p>';
+                fullCartTotal.textContent = 'कुल: ₹0';
+                return;
+            }
+            cart.forEach(item => {
+                const el = document.createElement('div');
+                el.style.display = 'flex';
+                el.style.gap = '12px';
+                el.style.alignItems = 'center';
+                el.style.padding = '10px 0';
+                el.style.borderBottom = '1px dashed #eee';
+                el.innerHTML = `
+                    <img src="${item.img}" style="width:86px; height:86px; object-fit:cover; border-radius:8px;">
+                    <div style="flex:1;">
+                        <div style="font-weight:700;">${item.name}</div>
+                        <div style="margin-top:6px;">${currency(item.price)} x ${item.qty} = <strong>${currency(item.price*item.qty)}</strong></div>
+                        <div style="margin-top:8px;">
+                            <button class="small-btn full-qty-dec" data-id="${item.id}">-</button>
+                            <span style="padding:6px 10px; margin:0 6px; border:1px solid #eee;">${item.qty}</span>
+                            <button class="small-btn full-qty-inc" data-id="${item.id}">+</button>
+                            <button class="small-btn full-remove" data-id="${item.id}" style="margin-left:10px; color:#b33;">हटाएँ</button>
+                        </div>
+                    </div>
+                `;
+                fullCartItems.appendChild(el);
+            });
+            fullCartTotal.textContent = 'कुल: ' + currency(getCartTotal(cart));
+        }
+
+        fullCartClose.addEventListener('click', ()=> fullCartModal.classList.remove('show'));
+        fullCartClear.addEventListener('click', ()=>{
+            if(confirm('क्या आप वाकई कार्ट साफ़ करना चाहते हैं?')){
+                saveCart([]);
+                renderFullCart();
+                renderCartPanel();
+            }
+        });
+        fullCheckoutBtn.addEventListener('click', ()=>{
+            fullCartModal.classList.remove('show');
+            // open address modal for cart checkout
+            openAddressModal(null, true);
+        });
+
+        /*************************************************************************
+         *  Toast (small messages)
+         *************************************************************************/
+        function showToast(msg){
+            const t = document.createElement('div');
+            t.textContent = msg;
+            t.style.position = 'fixed';
+            t.style.left = '50%';
+            t.style.transform = 'translateX(-50%)';
+            t.style.bottom = '30px';
+            t.style.background = 'rgba(0,0,0,0.8)';
+            t.style.color = '#fff';
+            t.style.padding = '10px 16px';
+            t.style.borderRadius = '8px';
+            t.style.zIndex = '9999';
+            document.body.appendChild(t);
+            setTimeout(()=> {
+                t.style.transition = 'all 0.3s';
+                t.style.opacity = '0';
+                t.style.transform = 'translateX(-50%) translateY(10px)';
+            }, 1400);
+            setTimeout(()=> t.remove(), 1900);
+        }
+
+        /*************************************************************************
+         *  Events: Global (product buttons, cart actions, search, slider)
+         *************************************************************************/
+        document.addEventListener('click', function(e){
+            // Add to cart
+            const atc = e.target.closest('.add-to-cart-btn');
+            if(atc){
+                const id = atc.getAttribute('data-id');
+                addToCart(id, 1);
+            }
+
+            // Buy now
+            const bnow = e.target.closest('.buy-now-btn');
+            if(bnow){
+                const id = bnow.getAttribute('data-id');
+                // open address modal (if not logged in, will trigger login then open)
+                openAddressModal(id, false);
+            }
+
+            // Cart toggle
+            if(e.target.closest('#cart-toggle')){
+                cartPanel.classList.toggle('show');
+                renderCartPanel();
+            }
+
+            // cart Panel qty inc/dec remove
+            if(e.target.classList.contains('qty-inc')){
+                changeQty(e.target.getAttribute('data-id'), +1);
+            }
+            if(e.target.classList.contains('qty-dec')){
+                changeQty(e.target.getAttribute('data-id'), -1);
+            }
+            if(e.target.classList.contains('remove-item')){
+                removeFromCart(e.target.getAttribute('data-id'));
+            }
+
+            // Full cart panel open
+            if(e.target.closest('#viewCartBtn')){
+                cartPanel.classList.remove('show');
+                renderFullCart();
+                fullCartModal.classList.add('show');
+            }
+
+            // checkout from small panel
+            if(e.target.closest('#checkoutCartBtn')){
+                cartPanel.classList.remove('show');
+                openAddressModal(null, true);
+            }
+
+            // full cart qty actions
+            if(e.target.classList.contains('full-qty-inc')){
+                changeQty(e.target.getAttribute('data-id'), +1);
+                renderFullCart();
+            }
+            if(e.target.classList.contains('full-qty-dec')){
+                changeQty(e.target.getAttribute('data-id'), -1);
+                renderFullCart();
+            }
+            if(e.target.classList.contains('full-remove')){
+                removeFromCart(e.target.getAttribute('data-id'));
+                renderFullCart();
+            }
+        });
+
+        // Search
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        searchBtn.addEventListener('click', ()=>{
+            const q = searchInput.value.trim().toLowerCase();
+            if(!q){ renderProducts(); return; }
+            const filtered = PRODUCTS.filter(p => p.name.toLowerCase().includes(q));
+            renderProducts(filtered);
+        });
+
+        // small slider dots
+        document.querySelectorAll('.dot').forEach(dot=>{
+            dot.addEventListener('click', ()=>{
+                document.querySelectorAll('.dot').forEach(d=> d.classList.remove('active'));
+                dot.classList.add('active');
+                const bg = dot.getAttribute('data-bg');
+                document.getElementById('sliderContainer').style.backgroundImage = `linear-gradient(rgba(0,0,0,0.15), rgba(0,0,0,0.35)), url('${bg}')`;
+            });
+        });
+
+        // Shop Now button (scroll to products)
+        document.getElementById('shopNowBtn').addEventListener('click', ()=>{
+            window.scrollTo({ top: document.querySelector('.products-section').offsetTop - 60, behavior: 'smooth' });
+        });
+
+        // global click outside cart panel closes it
+        document.addEventListener('click', (e)=>{
+            if(!e.target.closest('#cartPanel') && !e.target.closest('#cart-toggle') && cartPanel.classList.contains('show')){
+                cartPanel.classList.remove('show');
+            }
+        });
+
+        // on load: initial render
+        window.addEventListener('DOMContentLoaded', ()=>{
+            renderProducts();
+            renderCartCount();
+            renderCartPanel();
+            updateLoginUI();
+        });
+
+        // keep cart display in sync when storage changes (if multiple tabs)
+        window.addEventListener('storage', ()=>{
+            renderCartCount();
+            renderCartPanel();
+            renderFullCart();
+            updateLoginUI();
+        });
+
+    </script>
+</body>
+</html>
